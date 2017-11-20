@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC >
+<html>
+<head>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs
+/jquery/1.4.0/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script>
+
+    GA_Project
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+    <title>GA_Project
+    </title>
+</head>
+
+<body>
+<h1>Gene Network Module Identification</h1>
+step 1: Upload a File
+<form>
+    <input name="file" id="file" type="file"/>
+    <button type="button" onclick="upload_file();">upload</button>
+</form>
+<br>
+<br>
+<br>
+step 2: Number of Modules:
+<input type="text" id="n_modules" name="n_modules"/>
+GA Iteration Times:
+<input type="text" id="ga_times" name="ga_times"/>
+Local Search Iteration Times:
+<input type="text" id="ls_times" name="ls_times"/>
+<p>
+Population Size:
+<input type="text" id="pop_size" name="pop_size"/>
+Crossover Probability:
+<input type="text" id="cros_prob" name="cros_prob"/>
+Putation Probability:
+<input type="text" id="put_prob" name="put_prob"/>
+Probability of Random Immigration:
+<input type="text" id="ri_prob" name="ri_prob"/>
+</p>
+<button type="button" onclick="submit()">submit</button>
+<br><br><br><br>
+<h1 id="h1" hidden="hidden">start uploading file.......</h1>
+<h1 id="h2" hidden="hidden">successfully uploaded file !</h1>
+<br>
+<h1 id="h3" hidden="hidden">start running.......</h1>
+<a href="/download/"><h1 id="h4" hidden="hidden">running is over, please check the result !</h1></a>
+</body>
+<script type="application/javascript">
+    var fileName = "";
+    var outputName = "";
+    function upload_file() {
+        var form_data = new FormData();
+        var file_info = $('#file')[0].files[0];
+        form_data.append('file', file_info);
+        if (file_info == undefined) {
+            alert("No file has been selected !");
+            return false
+        }
+        console.log(file_info);
+        //send ajax request of file upload
+        $('#h1').show();
+        $.ajax({
+            url: '/upload_file/',
+            type: 'POST',
+            data: form_data,
+            processData: false,
+            contentType: false,
+            success: function (return_data) {
+                if (return_data != 1) {
+                    fileName = return_data;
+                    alert(fileName);
+                    $('#h2').show();
+                    //alert("file has been uploaded");
+                }else {
+                    alert("fail to upload file !")
+                }
+            }
+        });
+    }
+    function submit() {
+        //submit_job
+        var n_modules = $('#n_modules')[0].value;
+        var ga_times = $('#ga_times')[0].value;
+        var ls_times = $('#ls_times')[0].value;
+		var pop_size = $('#pop_size')[0].value;
+		var cros_prob = $('#cros_prob')[0].value;
+		var put_prob = $('#put_prob')[0].value;
+		var ri_prob = $('#put_prob')[0].value;
+        var file_name = fileName;
+        var params = {
+            'n_modules': n_modules,
+            'ga_times': ga_times,
+            'ls_times': ls_times,
+			'pop_size': pop_size,
+			'cros_prob': cros_prob,
+			'put_prob': put_prob,
+			'ri_prob': ri_prob,
+            'file_name': file_name
+			
+        };
+        $('#h3').show();
+        $('#h4').hide();
+        $.ajax({
+            url: '/submit_job/',
+            type: 'POST',
+            data: params,
+            dataType: 'json',
+            success: function (return_data) {
+                if (return_data == 0) {
+                    alert("job finished !");
+                    $('#h4').show();
+                } else {
+                    alert("error occurred");
+                }
+            }
+        });
+    }
+
+
+</script>
+</html>
