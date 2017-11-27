@@ -49,7 +49,7 @@ def submit_job(request):
         put_prob = request.POST.get('put_prob',None)
         ri_prob = request.POST.get('ri_prob',None)
         # run r script by system call
-        r_script_name="testR.R"
+        r_script_name="Perform_GA.R"
         base_path=os.path.abspath(".")
         input1=os.path.join(upload_folder_path,file1)
         input2=os.path.join(upload_folder_path,file2)
