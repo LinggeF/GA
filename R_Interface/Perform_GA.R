@@ -38,13 +38,13 @@ modN <- as.numeric(args[5])
 #probability of introducing fresh chromesomes
 Pnew <- as.numeric(args[6])
 # iteration times for Local search
-LK <- as.numeric(arg[7])
+LK <- as.numeric(args[7])
 #score_matrix
-score_matrix_even_inter.txt <- as.character(args[8])
+Score_matrix_even_inter <- as.character(args[8])
 #mR_mR_corr
-mR_mR_corr.txt <- as.character(args[9])
+mR_mR_corr <- as.character(args[9])
 #gene_category
-gene_category.txt <- as.character(args[10])
+gene_category <- as.character(args[10])
 #####
 # Options for control the size of regulators
 #miR_per <- as.numeric(args[7])*100
@@ -56,8 +56,8 @@ gene_category.txt <- as.character(args[10])
 
 
 
-# File name for output
-filename <- as.character(args[11])
+# File  for output
+output <- as.character(args[11])
 
 
 
@@ -93,12 +93,12 @@ nTF_per <- 0.02*100
 # Loading PCC matrix
 # Calculate # of miRNAs/TFs/nTFs
 
-Score_matrix <- read.table("Score_matrix_even_inter.txt",sep="\t",header=T)
+Score_matrix <- read.table(Score_matrix_even_inter,sep="\t",header=T)
 colnames(Score_matrix) <- rownames(Score_matrix)
-mR_corr <- read.table("mR_mR_corr.txt",sep="\t",header=T)
+mR_corr <- read.table(mR_mR_corr,sep="\t",header=T)
 colnames(mR_corr) <- rownames(mR_corr)
 
-geneCa <- read.table("gene_category.txt",sep="\t",header=T)
+geneCa <- read.table(gene_category,sep="\t",header=T)
 miR_list <- as.character(geneCa[which(geneCa[,"Category"]=="miR"),"Name"])
 TF_list <- as.character(geneCa[which(geneCa[,"Category"]=="TF"),"Name"])
 nTF_list <- as.character(geneCa[which(geneCa[,"Category"]=="nTF"),"Name"])
@@ -119,6 +119,14 @@ rg_length <- miR_length+TF_length
 # Multiple core setup
 registerDoMC(cores=6)
 final <- Module_Identification(Pmu,Pco,popN,modN,K,LK,Pnew,verb=TRUE)
-save(list=ls(),file=paste(filename,".RData",sep=""))
+
+
+os = file(output,"w")
+
+
+lapply(final,write,os, append =F)
+#write(final,os,append = F)
+
+save(list=ls(),file=paste(output,".RData",sep=""))
 
 

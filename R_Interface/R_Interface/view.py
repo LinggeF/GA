@@ -51,11 +51,11 @@ def submit_job(request):
         # run r script by system call
         r_script_name="Perform_GA.R"
         base_path=os.path.abspath(".")
-        input1=os.path.join(upload_folder_path,file1)
-        input2=os.path.join(upload_folder_path,file2)
-        input3=os.path.join(upload_folder_path,file3)
+        input1=os.path.join(upload_folder_path,"Score_matrix_even_inter.txt")
+        input2=os.path.join(upload_folder_path,"mR_mR_corr.txt")
+        input3=os.path.join(upload_folder_path,"gene_category.txt")
         output_file_name="output.txt"
-        output_path=os.path.join(base_path,"output",output_file_name)
+        output_path=os.path.join(base_path,"output","output.txt")
 
         #the format of Command Line
         cmd="Rscript"+" "+r_script_name+" "+pop_size+" "+cros_prob+" "+put_prob+" "+ga_times+" "+n_modules+" "+ri_prob+" "+ls_times+" "+input1+" "+input2+" "+input3+" "+output_path
