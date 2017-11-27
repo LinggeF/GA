@@ -37,26 +37,44 @@ K <- as.numeric(args[4])
 modN <- as.numeric(args[5])
 #probability of introducing fresh chromesomes
 Pnew <- as.numeric(args[6])
+# iteration times for Local search
+LK <- as.numeric(arg[7])
+#score_matrix
+score_matrix_even_inter.txt <- as.character(args[8])
+#mR_mR_corr
+mR_mR_corr.txt <- as.character(args[9])
+#gene_category
+gene_category.txt <- as.character(args[10])
+#####
 # Options for control the size of regulators
-miR_per <- as.numeric(args[7])*100
-TF_per <- as.numeric(args[8])*100
+#miR_per <- as.numeric(args[7])*100
+#TF_per <- as.numeric(args[8])*100
 # Initial population setup for GA
-nTF_per <- as.numeric(args[9])*100
+#nTF_per <- as.numeric(args[9])*100
+#####
+
+
+
 
 # File name for output
-filename <- as.character(args[10])
+filename <- as.character(args[11])
+
+
+
+
+
 
 # loading GA functions
 source("GA_1.2.R")
 
 # set parameter
-popN <- 100
-Pco <- 0.7
-Pmu <- 0.001
-K <- 500
-modN <- 10
-Pnew <- 0.01
-LK <-1000
+#popN <- 100
+#Pco <- 0.7
+#Pmu <- 0.001
+#K <- 500
+#modN <- 10
+#Pnew <- 0.01
+#LK <-1000
 
 
 
