@@ -16,7 +16,7 @@
 <h1>Gene Network Module Identification</h1>
 step 1: Upload a File
 <form>
-    <input name="file" id="file" type="file"/>
+    <input name="file" id="file" type="file" multiple="multiple"/>
     <button type="button" onclick="upload_file();">upload</button>
 </form>
 <br>
@@ -47,17 +47,19 @@ Probability of Random Immigration:
 <a href="/download/"><h1 id="h4" hidden="hidden">running is over, please check the result !</h1></a>
 </body>
 <script type="application/javascript">
-    var fileName = "";
-    var outputName = "";
+    var folder_path;
+    var outputName;
     function upload_file() {
         var form_data = new FormData();
-        var file_info = $('#file')[0].files[0];
-        form_data.append('file', file_info);
-        if (file_info == undefined) {
+        var files=$('#file')[0].files;
+        if (files == undefined) {
             alert("No file has been selected !");
-            return false
+            return false;
         }
-        console.log(file_info);
+        console.log(files.length);
+        for (var i=0;i<files.length;++i){
+            form_data.append(i, files[i]);
+        }
         //send ajax request of file upload
         $('#h1').show();
         $.ajax({
@@ -68,8 +70,8 @@ Probability of Random Immigration:
             contentType: false,
             success: function (return_data) {
                 if (return_data != 1) {
-                    fileName = return_data;
-                    alert(fileName);
+                    folder_path = return_data;
+                    alert(folder_path);
                     $('#h2').show();
                     //alert("file has been uploaded");
                 }else {
@@ -87,7 +89,6 @@ Probability of Random Immigration:
 		var cros_prob = $('#cros_prob')[0].value;
 		var put_prob = $('#put_prob')[0].value;
 		var ri_prob = $('#put_prob')[0].value;
-        var file_name = fileName;
         var params = {
             'n_modules': n_modules,
             'ga_times': ga_times,
@@ -96,7 +97,7 @@ Probability of Random Immigration:
 			'cros_prob': cros_prob,
 			'put_prob': put_prob,
 			'ri_prob': ri_prob,
-            'file_name': file_name
+            'folder_path': folder_path
 			
         };
         $('#h3').show();
@@ -116,7 +117,6 @@ Probability of Random Immigration:
             }
         });
     }
-
 
 </script>
 </html>

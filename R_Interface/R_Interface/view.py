@@ -2,32 +2,45 @@ from django.http import HttpResponse
 from django.shortcuts import render,render_to_response
 import uuid
 import os
+import json
+
+file1="Score_matrix_even.txt"
+file2="mR_mR_corr.txt"
+file3="gene_category.txt"
+
 def index(request):
     return render_to_response("GA_web.html")
+def handle_upload_file(file,forlder_path):
+    of = open(os.path.join(forlder_path,file.name), 'wb+')
+    for chunk in file.chunks():
+        of.write(chunk)
+    of.close()
 
 def upload_file(request):
     if request.method=="POST":
         #get file from request.FILES
-        file=request.FILES.get("file",None)
-        file_name=""
-        print file
-        if file == None:
+        files=[]
+        f_list=request.FILES
+        for i in range(0,len(f_list)):
+            files.append(f_list.get(str(i)))
+        print f_list.get(str(0))
+        print files
+        if files == None:
             return HttpResponse(1)
-
-        file_type = file.name.split(".")[-1]
-        file_path = "upload/"
-        file_name = str(uuid.uuid1()) + "." + file_type
-        of = open(file_path + file_name, 'wb+')
-        for chunk in file.chunks():
-            of.write(chunk)
-        of.close()
-        return HttpResponse(file_name)
+        base_path=os.path.abspath(".")
+        u_path = str(uuid.uuid1())
+        folder_path = os.path.join(base_path,"upload/", u_path)
+        if not os.path.exists(folder_path):
+            os.mkdir(folder_path)
+        for f in files:
+            handle_upload_file(f,folder_path)
+        return HttpResponse(str(folder_path))
 
 def submit_job(request):
     if request.method=="POST":
         #get parameters from request.POST
         print request.POST
-        upload_file_name=request.POST.get('file_name',None)
+        upload_folder_path=request.POST.get('folder_path',None)
         n_modules = request.POST.get('n_modules', None)
         ga_times = request.POST.get('ga_times', None)
         ls_times = request.POST.get('ls_times', None)
@@ -36,14 +49,16 @@ def submit_job(request):
         put_prob = request.POST.get('put_prob',None)
         ri_prob = request.POST.get('ri_prob',None)
         # run r script by system call
-        r_script_name="Perform_GA.R"
+        r_script_name="testR.R"
         base_path=os.path.abspath(".")
-        upload_path=os.path.join(base_path,"upload",upload_file_name)
+        input1=os.path.join(upload_folder_path,file1)
+        input2=os.path.join(upload_folder_path,file2)
+        input3=os.path.join(upload_folder_path,file3)
         output_file_name="output.txt"
         output_path=os.path.join(base_path,"output",output_file_name)
 
         #the format of Command Line
-        cmd="Rscript"+" "+r_script_name+" "+pop_size+" "+cros_prob+" "+put_prob+" "+ga_times+" "+n_modules+" "+ri_prob+" "+ls_times+" "+upload_path+" "+output_path
+        cmd="Rscript"+" "+r_script_name+" "+pop_size+" "+cros_prob+" "+put_prob+" "+ga_times+" "+n_modules+" "+ri_prob+" "+ls_times+" "+input1+" "+input2+" "+input3+" "+output_path
         code=os.system(cmd)
         print code
         if code==0:
