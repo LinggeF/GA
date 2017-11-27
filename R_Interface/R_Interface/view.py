@@ -4,9 +4,6 @@ import uuid
 import os
 import json
 
-file1="Score_matrix_even.txt"
-file2="mR_mR_corr.txt"
-file3="gene_category.txt"
 
 def index(request):
     return render_to_response("GA_web.html")
