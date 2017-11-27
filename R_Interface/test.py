@@ -5,4 +5,4 @@ code=system("Rscript testR.R 1 2 3 E:\python\R_Interface\upload\input.txt E:\pyt
 
 
 #code=os.system("java -version")
-print code
+print "test"
