@@ -48,14 +48,17 @@ def submit_job(request):
         # run r script by system call
         r_script_name="Perform_GA.R"
         base_path=os.path.abspath(".")
-        input1=os.path.join(upload_folder_path,"Score_matrix_even_inter.txt")
-        input2=os.path.join(upload_folder_path,"mR_mR_corr.txt")
-        input3=os.path.join(upload_folder_path,"gene_category.txt")
+        input1 = os.path.join(upload_folder_path,"mR_mR_corr.txt")
+        input2 = os.path.join(upload_folder_path,"miR_miR_corr.txt")
+        input3 = os.path.join(upload_folder_path,"miR_mR_corr.txt")
+        input4 = os.path.join(upload_folder_path,"mR_mR_corr_pvalue")
+        input5 = os.path.join(upload_folder_path, "miR_miR_corr_pvalue")
+        input6 = os.path.join(upload_folder_path, "miR_mR_corr_pvalue")
         output_file_name="output.txt"
         output_path=os.path.join(base_path,"output","output.txt")
 
         #the format of Command Line
-        cmd="Rscript"+" "+r_script_name+" "+pop_size+" "+cros_prob+" "+put_prob+" "+ga_times+" "+n_modules+" "+ri_prob+" "+ls_times+" "+input1+" "+input2+" "+input3+" "+output_path
+        cmd="Rscript"+" "+r_script_name+" "+pop_size+" "+cros_prob+" "+put_prob+" "+ga_times+" "+n_modules+" "+ri_prob+" "+ls_times+" "+input1+" "+input2+" "+input3+" "+input4+" "+input5+" "+input6+" "+output_path
         code=os.system(cmd)
         print code
         if code==0:

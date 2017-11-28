@@ -28,7 +28,7 @@ miR_miR_corr <- args[8]
 #mR_mR_corr
 mR_mR_corr <- args[9]
 #miR_mR_corr
-miR_mR <- args[10]
+miR_mR_corr <- args[10]
 
 ###Read in p value matrix
 #miR_miR_corr_pvalue
