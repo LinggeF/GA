@@ -100,7 +100,7 @@ miR_mR_corr_raw <- as.matrix(read.table(miR_mR_corr,sep="\t"))
 # correct bugs which may existed in colnames
 colnames(miR_miR_corr_raw) <- rownames(miR_miR_corr_raw)
 colnames(mR_mR_corr_raw) <- rownames(mR_mR_corr_raw)
-colnames(miR_mR_corr_raw) <- rownames(miR_mR_corr_raw)
+colnames(miR_mR_corr_raw) <- rownames(mR_mR_corr_raw)
 
 # Read in p value matrices
 miR_miR_corr_p <- as.matrix(read.table(miR_miR_corr_pvalue,sep="\t",check.names=F))
@@ -241,9 +241,6 @@ colnames(geneCa) <- c("Name","Category")
 #write.table(Score_matrix,"Score_matrix_even_inter.txt",sep="\t",row.names=T,col.names=T)
 #write.table(geneCa,"gene_category.txt",sep="\t",row.names=T,col.names=T)
 #write.table(mR_mR_corr,"mR_mR_corr.txt",sep="\t",row.names=T,col.names=T)
-
-save(list=ls(),file="Score_matrix_even_inter.RData")
-
 
 ##########
 #gene_category <- geneCa
