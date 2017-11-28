@@ -51,9 +51,9 @@ def submit_job(request):
         input1 = os.path.join(upload_folder_path,"mR_mR_corr.txt")
         input2 = os.path.join(upload_folder_path,"miR_miR_corr.txt")
         input3 = os.path.join(upload_folder_path,"miR_mR_corr.txt")
-        input4 = os.path.join(upload_folder_path,"mR_mR_corr_pvalue")
-        input5 = os.path.join(upload_folder_path, "miR_miR_corr_pvalue")
-        input6 = os.path.join(upload_folder_path, "miR_mR_corr_pvalue")
+        input4 = os.path.join(upload_folder_path,"mR_mR_corr_pvalue.txt")
+        input5 = os.path.join(upload_folder_path, "miR_miR_corr_pvalue.txt")
+        input6 = os.path.join(upload_folder_path, "miR_mR_corr_pvalue.txt")
         output_file_name="output.txt"
         output_path=os.path.join(base_path,"output","output.txt")
 
