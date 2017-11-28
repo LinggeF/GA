@@ -24,19 +24,19 @@ Pnew <- as.numeric(args[6])
 LK <- as.numeric(args[7])
 ###read in correlation matrix
 #miR_miR_corr
-miR_miR_corr <- args[8]
+miR_miR_corr <- as.character(args[8])
 #mR_mR_corr
-mR_mR_corr <- args[9]
+mR_mR_corr <- as.character(args[9])
 #miR_mR_corr
-miR_mR_corr <- args[10]
+miR_mR_corr <-as.character(args[10])
 
 ###Read in p value matrix
 #miR_miR_corr_pvalue
-miR_miR_corr_pvalue <- args[11]
+miR_miR_corr_pvalue <- as.character(args[11])
 #mR_mR_corr_pvalue
-mR_mR_corr_pvalue <- args[12]
+mR_mR_corr_pvalue <- as.character(args[12])
 #miR_mR_corr_pvalue
-miR_mR_corr_pvalue <- args[13]
+miR_mR_corr_pvalue <- as.character(args[13])
 # File  for output
 output <- as.character(args[14])
 
@@ -87,6 +87,7 @@ list2matrix <- function(list,names1,names2)
 	out
 }
 
+
 #-----------------------------------------------------------------------------
 # data process
 #-----------------------------------------------------------------------------
@@ -99,7 +100,7 @@ miR_mR_corr_raw <- as.matrix(read.table(miR_mR_corr,sep="\t"))
 # correct bugs which may existed in colnames
 colnames(miR_miR_corr_raw) <- rownames(miR_miR_corr_raw)
 colnames(mR_mR_corr_raw) <- rownames(mR_mR_corr_raw)
-colnames(miR_mR_corr_raw) <- rownames(mR_mR_corr_raw)
+colnames(miR_mR_corr_raw) <- rownames(miR_mR_corr_raw)
 
 # Read in p value matrices
 miR_miR_corr_p <- as.matrix(read.table(miR_miR_corr_pvalue,sep="\t",check.names=F))
