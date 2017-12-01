@@ -55,7 +55,7 @@ def submit_job(request):
         input5 = os.path.join(upload_folder_path, "mR_mR_corr_pvalue.txt")
         input6 = os.path.join(upload_folder_path, "miR_mR_corr_pvalue.txt")
         output_file_name="output.txt"
-        output_path=os.path.join(base_path,"output","output.txt")
+        output_path=os.path.join(base_path,"output","output")
 
         #the format of Command Line
         cmd="Rscript"+" "+r_script_name+" "+pop_size+" "+cros_prob+" "+put_prob+" "+ga_times+" "+n_modules+" "+ri_prob+" "+ls_times+" "+input1+" "+input2+" "+input3+" "+input4+" "+input5+" "+input6+" "+output_path
@@ -69,7 +69,7 @@ def submit_job(request):
 
 def download(request):
     # download
-    output_path = os.path.join(os.path.abspath("."),"output","output.txt")
+    output_path = os.path.join(os.path.abspath("."),"output","output")
     with open(output_path) as f:
         c = f.read()
     return HttpResponse(c)

@@ -282,16 +282,6 @@ colnames(geneCa) <- c("Name","Category")
 #nTF_per <- as.numeric(args[9])*100
 ##########
 
-
-
-
-
-
-
-
-
-
-
 # loading GA functions
 source("GA_1.2.R")
 
@@ -303,12 +293,6 @@ source("GA_1.2.R")
 #modN <- 10
 #Pnew <- 0.01
 #LK <-1000
-
-
-
-
-
-
 
 # Options for control the size of regulators
 TF_per <- 0.04*100
@@ -346,11 +330,253 @@ rg_length <- miR_length+TF_length
 
 # Multiple core setup
 registerDoMC(cores=6)
-final <- Module_Identification(Pmu,Pco,popN,modN,K,LK,Pnew,verb=TRUE)
+#final <- Module_Identification(Pmu,Pco,popN,modN,K,LK,Pnew,verb=TRUE)
 
-os = file(output,"w")
-lapply(final,write,os, append =F)
+#os = file(output,"w")
+#lapply(final,write,os, append =F)
 
-save(list=ls(),file=paste(output,".RData",sep=""))
+##############################################################################################################################
+##############################################################################################################################
+###############################################################
+###############################################################
+###############################################################
+#-----------------------------------------------------------------------------
+# For evaluation of GA and LS, the two component are actually run separately
+#-----------------------------------------------------------------------------
+
+verb <- TRUE
+print("Algorithm Start")
+Modules <- matrix(logical(),nrow=modN,ncol=N)
+# Matrix for store GA solutions
+ga_result_out <- matrix(logical(),nrow=modN,ncol=mR_length)
+ga_scores <- list()
+ls_scores <- list()
+m <- 1
+score_sub <- as.matrix(Score_matrix)
+corr <- abs(as.matrix(mR_corr))
+while(m <= modN)
+{
+  print(paste("Module",m))
+  # Perform GA to identify co-expressed gene set
+  ga_result_tmp <- GA(Pmu,Pco,popN,modN,K,Pnew,corr,verb,TRUE)
+  ga_result <- ga_result_tmp$pop
+  ga_scores[[m]] <- ga_result_tmp$record
+  # Repair GA solution
+  best_chr <- module_cleanup(ga_result[1,],corr)
+  # In case there no nTF genes exists, regenerate new solutions
+  if(length(which(best_chr[(TF_length+1):mR_length])) < 3)
+  {
+    print("No nTF genes exists. Regenerate.")
+  }
+  else
+  {
+    ga_result_out[m,] <- best_chr
+    # Perform LS to detect best regulators
+    solution_tmp <- Local_Search(best_chr,LK,score_sub,verb,TRUE)
+    solution <- solution_tmp$best
+    ls_scores[[m]] <- solution_tmp$record
+    Modules[m,] <- solution
+    # Update correlation matrix in case duplicated gene sets are identified by GA
+    corr[best_chr,best_chr] <- matrix(0,nrow=length(which(best_chr)),ncol=length(which(best_chr)))
+    m <- m+1
+  }
+} # module end
+
+###############################################################
+###############################################################
+###############################################################
+###############################################################
+###############################################################
+
+#-------------------------------------------------------------------------
+# Functions used in evaluation
+#-------------------------------------------------------------------------
+
+unmatrix <- function (x)
+{
+  rnames <- rownames(x)
+  cnames <- colnames(x)
+  if (is.null(rnames))
+    rnames <- paste("r", 1:nrow(x), sep = "")
+  if (is.null(cnames))
+    cnames <- paste("c", 1:ncol(x), sep = "")
+  nmat <- outer(rnames, cnames, paste, sep = ":")
+  vlist <- c(t(x))
+  names(vlist) <- c(t(nmat))
+  return(vlist)
+}
+
+strsplit2 <- function (x, split, ...)
+{
+  x <- as.character(x)
+  n <- length(x)
+  s <- strsplit(x, split = split, ...)
+  nc <- unlist(lapply(s, length))
+  out <- matrix("", n, max(nc))
+  for (i in 1:n) {
+    if (nc[i])
+      out[i, 1:nc[i]] <- s[[i]]
+  }
+  out
+}
+
+# Score function for module evaluation
+cal_score <- function(mat,score_sub)
+{
+
+  score_m <- score_sub[mat,mat]
+  score <- sum(score_m)/length(which(score_m>0))
+}
+
+special_pie <- function(x,main="",anno=TRUE)
+{
+  slices <- as.numeric(x)
+  if(anno)
+  {
+    lbls <- c("PCC&Binding","PCC only","Binding only")
+    pct <- format(slices/sum(slices)*100,digit=2)
+    lbls <- paste(lbls,pct,sep=":")
+    lbls <- paste(lbls,"%",sep="")
+    pie(slices,labels=lbls,main=main,col=c("lightblue", "mistyrose", "lightcyan"))
+  }
+  else
+  {
+    pie(slices,labels="",col=c("lightblue", "mistyrose", "lightcyan"))
+    legend("topright",legend=c("PCC&Binding","PCC only","Binding only"),fill=c("lightblue", "mistyrose", "lightcyan"),cex=0.7,bty="n")
+  }
+}
+
+#---------------------------------------------------------------------------------------#
+
+
+
+mod_matrix <- Modules
+
+# Write individual interactions to file
+# Scores, PCCs and nodes of each interaction are output
+
+tmp <- matrix(0,nrow=nTF_length,ncol=mR_length)
+TF_gene_inter_sub <- rbind(TF_gene_inter,tmp)
+rownames(TF_gene_inter_sub) <- colnames(TF_gene_inter_sub)
+
+# Matrix to store summary of interactions
+Module_stats <- matrix("",nrow=modN,ncol=6)
+colnames(Module_stats) <- c("ID","Nodes","Inter","PCC&Binding","PCC only","Binding only")
+
+module_all <- NULL
+for(i in 1:10)
+{
+  geneCa_sub <- geneCa[mod_matrix[i,],]
+  miR_sub <- as.character(geneCa_sub[geneCa_sub[,2]=="miR",1])
+  TF_sub <- as.character(geneCa_sub[geneCa_sub[,2]=="TF",1])
+  nTF_sub <- as.character(geneCa_sub[geneCa_sub[,2]=="nTF",1])
+  mR_sub <- c(TF_sub,nTF_sub)
+
+
+  mod_list <- c(unmatrix(miR_miR_corr_new[miR_sub,miR_sub]),unmatrix(miR_mR_corr_new[miR_sub,mR_sub]),unmatrix(mR_mR_corr_new[mR_sub,mR_sub]))
+  score_sub <- c(unmatrix(Score_matrix[miR_sub,miR_sub]),unmatrix(Score_matrix[miR_sub,mR_sub]),unmatrix(Score_matrix[mR_sub,mR_sub]))
+  seq_pre <- c(rep(0,length(miR_sub)^2),unmatrix(miR_gene_inter[miR_sub,mR_sub]),unmatrix(TF_gene_inter_sub[mR_sub,mR_sub]))
+
+  mod_sub_names <- strsplit2(names(mod_list),split=":")
+
+  mod_sub <- data.frame(mod_sub_names[,1],geneCa[match(mod_sub_names[,1],geneCa[,1]),2],mod_sub_names[,2],geneCa[match(mod_sub_names[,2],geneCa[,1]),2],as.numeric(mod_list),as.numeric(seq_pre),as.numeric(score_sub))
+  mod_sub_out <- mod_sub[mod_sub[,7]!=0,]
+  colnames(mod_sub_out) <- c("Node1","Type1","Node2","Type2","PCC","Seq_pre","Score")
+  mod_sub_out <- mod_sub_out[!duplicated(mod_sub_out[,7]),]
+  module_all <- rbind(module_all,cbind(rep(i,dim(mod_sub_out)[1]),mod_sub_out))
+  pcc_inter <- ifelse(mod_sub_out[,5]== 0,0,ifelse(mod_sub_out[,5]<0,-1,1))
+  seq_inter <- ifelse(mod_sub_out[,6]==0,0,1)
+  mod4plot <- cbind(mod_sub_out[,1:4],pcc_inter,seq_inter)
+  mod4plot <- mod4plot[mod4plot[,2] !="nTF" | mod4plot[,4]!="nTF",]
+  # Each module are write to individual files for Cytoscape
+  write.table(mod4plot,paste(output,"_","module_",i,".txt",sep=""),row.names=F,sep="\t",quote=F)
+  Module_stats[i,] <- c(i,paste(count_category(mod_matrix[i,]),collapse="/"),dim(mod_sub_out)[1],length(which(mod_sub_out[,6]!=0 & mod_sub_out[,5]!=0)),length(which(mod_sub_out[,5]!=0 & mod_sub_out[,6]==0)),length(which(mod_sub_out[,6]!=0 & mod_sub_out[,5]==0)))
+}
+write.table(module_all,paste(output,"_","Modules.txt"),sep="\t",row.names=F,col.names=T,quote=F)
+write.table(Module_stats,paste(output,"_","Module_stats.txt"),sep="\t",row.names=F,col.names=T,quote=F)
+
+#---------------------------------------------------------------------------------------#
+
+
+#---------------------------------------------------------------------------------------#
+# generate random background
+#---------------------------------------------------------------------------------------#
+registerDoMC(cores=6)
+
+n <- 1000
+rand_node_score <- NULL
+for(i in 1:dim(mod_matrix)[1])
+{
+  print(i)
+  cat_count <- count_category(mod_matrix[i,])
+  tmp <- foreach(i = 1:n, .combine="rbind", .multicombine=TRUE, .inorder=F) %do% c(sample(1:miR_length,cat_count[1],replace=F),sample(TF_s_index:(nTF_s_index-1),cat_count[2],replace=F),sample(nTF_s_index:N,cat_count[3],replace=F))
+  tmp_score <- foreach(i = 1:n, .combine="c", .multicombine=TRUE, .inorder=T) %dopar% cal_score(tmp[i,],Score_matrix)
+  rand_node_score <- c(rand_node_score,tmp_score)
+}
+base_scores <- foreach(i = 1:modN, .combine="c", .multicombine=TRUE, .inorder=T) %dopar% cal_score(mod_matrix[i,],Score_matrix)
+base_scores <- apply(mod_matrix,1,cal_score,Score_matrix)
+
+
+
+#---------------------------------------------------------------------------------------#
+# permutation test for identified modules
+#---------------------------------------------------------------------------------------#
+
+n=10000
+substitue_score <- matrix(0,nrow=n,ncol=modN)
+for(j in 1:modN)
+{
+  print(j)
+  mod <- mod_matrix[j,]
+  for(i in 1:n)
+  {
+    ind <- which(mod)
+    randN <- sample(1:length(ind),1)
+    rand_loc <- sample(1:length(ind),randN)
+    rep <- sample((1:N)[-1*ind],randN)
+    ind[rand_loc] <- rep
+    substitue_score[i,j] <- cal_score(sort(ind),Score_matrix)
+  }
+}
+
+p_value <- vector("numeric",modN)
+for(i in 1:modN)
+{
+  p_value[i] <- length(which(substitue_score[,i]>base_scores[i]))/(n+1)
+}
+
+
+#---------------------------------------------------------------------------------------#
+
+#---------------------------------------------------------------------------------------#
+# Generate table which includes miRNA/gene names for using DAVID to perform GO term and
+# KEGG pathway analysis
+#---------------------------------------------------------------------------------------#
+out <- matrix("",nrow=10,ncol=6)
+out_4GO <- NULL
+for (i in 1:modN)
+{
+  geneCa_sub <- geneCa[mod_matrix[i,],]
+  miR_sub <- as.character(geneCa_sub[geneCa_sub[,2]=="miR",1])
+  TF_sub <- as.character(geneCa_sub[geneCa_sub[,2]=="TF",1])
+  nTF_sub <- as.character(geneCa_sub[geneCa_sub[,2]=="nTF",1])
+
+  out[i,1] <- i
+  out[i,2] <- paste(miR_sub,collapse=",")
+  out[i,3] <- paste(TF_sub,collapse=",")
+  out[i,4] <- paste(nTF_sub,collapse=",")
+  out[i,5] <- format(base_scores[i],digits=4)
+  out[i,6] <- format(p_value[i],scientific=T)
+  tmp <- c(TF_sub,nTF_sub)
+  out_4GO <- rbind(out_4GO,cbind(rep(i,length(tmp)),tmp))
+}
+colnames(out) <- c("ID","miRNA","TF","nTF","Score","P value")
+write.table(out,paste(output,"_","Table_module_list.txt"),quote=F,sep="\t",row.names=F)
+
+write.table(out_4GO,paste(output,"_","GO_test.txt"),quote=F,sep="\t",row.names=F,col.names=F)
+#---------------------------------------------------------------------------------------#
+
+#os = file(output,"w")
+#lapply(final,write,os, append =F)
 
 
