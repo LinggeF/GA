@@ -69,7 +69,7 @@ def submit_job(request):
 
 def download(request):
     # download
-    output_path = os.path.join(os.path.abspath("."),"output","output")
+    output_path = os.path.join(os.path.abspath("."),"output","output _ Table_module_list.txt")
     with open(output_path) as f:
         c = f.read()
     return HttpResponse(c)
